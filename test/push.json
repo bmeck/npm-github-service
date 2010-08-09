@@ -1,0 +1,76 @@
+{
+  "after": "d456a4e0019df0cad2c7d67935a24ea30290ba1d",
+  "before": "f8f236ee6decb65350022e4302ee76abe3320f00",
+  "commits": [
+    {
+      "added": [
+        "lib\/weakmap.js",
+        "lib\/weakpointer.js"
+      ],
+      "author": {
+        "email": "bradleymeck@hamburger.local",
+        "name": "Bradley Meck"
+      },
+      "id": "8fa71961faa4c2f17f84dd22ccb3150b23da9c6a",
+      "message": "WeakMap\/WeakPointer added",
+      "modified": [],
+      "removed": [],
+      "timestamp": "2010-08-05T12:46:00-07:00",
+      "url": "http:\/\/github.com\/bmeck\/node-overload\/commit\/8fa71961faa4c2f17f84dd22ccb3150b23da9c6a"
+    },
+    {
+      "added": [],
+      "author": {
+        "email": "bradleymeck@hamburger.local",
+        "name": "Bradley Meck"
+      },
+      "id": "8cf5a90291cdbab83034cfe39625fc45376f98ed",
+      "message": "WeakMap\/WeakPointer doc",
+      "modified": [
+        "README.md",
+        "lib\/weakmap.js"
+      ],
+      "removed": [],
+      "timestamp": "2010-08-05T12:56:26-07:00",
+      "url": "http:\/\/github.com\/bmeck\/node-overload\/commit\/8cf5a90291cdbab83034cfe39625fc45376f98ed"
+    },
+    {
+      "added": [],
+      "author": {
+        "email": "bradley.meck@gmail.com",
+        "name": "Bradley Meck"
+      },
+      "id": "d456a4e0019df0cad2c7d67935a24ea30290ba1d",
+      "message": "",
+      "modified": [
+        "README.md"
+      ],
+      "removed": [],
+      "timestamp": "2010-08-05T13:07:41-07:00",
+      "url": "http:\/\/github.com\/bmeck\/node-overload\/commit\/d456a4e0019df0cad2c7d67935a24ea30290ba1d"
+    }
+  ],
+  "compare": "http:\/\/github.com\/bmeck\/node-overload\/compare\/f8f236e...d456a4e",
+  "forced": false,
+  "ref": "refs\/heads\/master",
+  "repository": {
+    "created_at": "2010\/05\/27 10:08:50 -0700",
+    "description": "node.js addon that provides an Watchable class that has getters\/setters without property names",
+    "fork": false,
+    "forks": 1,
+    "has_downloads": true,
+    "has_issues": true,
+    "has_wiki": true,
+    "homepage": "",
+    "name": "node-overload",
+    "open_issues": 1,
+    "owner": {
+      "email": "bradley.meck@gmail.com",
+      "name": "bmeck"
+    },
+    "private": false,
+    "pushed_at": "2010\/08\/05 13:07:42 -0700",
+    "url": "http:\/\/github.com\/bmeck\/node-overload",
+    "watchers": 7
+  }
+}
