@@ -6,13 +6,9 @@ var port = 8888
 function start() {
 	process.chdir( "./repos" )
 	var server = http.createServer(
-		function() {
-			console.log("REQUEST!")
-			require( "./src/PostRecieveHook" ).apply(this,arguments)
-		}
+		require( "./src/PostRecieveHook" )
 	)
-	server.on("connection",function(){console.log("@CONNECTION EVENT")})
-	server.listen( port, "127.0.0.1" )
+	server.listen( port )
 	console.log("SERVER STARTED ON PORT "+port)
 }
 

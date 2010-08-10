@@ -3,7 +3,6 @@ var fs = require( "fs" )
 var path = require( "path" )
 var sys = require( "sys" )
 var exec = function() {
-	console.log(Array.prototype.slice.call(arguments))
 	require("child_process").exec.apply(this,arguments)
 }
 
@@ -19,6 +18,7 @@ function GetPackageJSON(push,cb) {
 			cb({
 				name:push.repository.name
 				,description:push.repository.description
+				,
 			})
 		}
 	})
@@ -56,16 +56,16 @@ function ProcessCommits(name,todos) {
 		return
 	}
 	update=todos.shift()
-	console.log(sys.inspect(update))
 	update.pkg.version=update.tag
 	PublishVersion(name,update,todos)
 }
 
 function Upload(name,update,todos) {
+	console.log("UPLOADING")
 	fs.writeFile(path.join(name,"package.json"),JSON.stringify(update.pkg),function(err) {
 		if(err) throw err
 		exec("git --git-dir="+name+"/.git --work-tree=./ checkout "+update.commit,function(error){
-			exec("np publish "+name,function(error){
+			exec("npm publish "+name,function(error){
 				if(error) throw error
 				ProcessCommits(name,todos)
 			})
@@ -75,12 +75,20 @@ function Upload(name,update,todos) {
 
 function PublishVersion(name,update,todos) {
 	var npm_http = http.createClient(80,"registry.npmjs.org")
-	var request = npm.request("/"+name)
-	request.on("GET","response",function(response) {
+	var request = npm_http.request("GET","/"+name,{host:"registry.npmjs.org"})
+	request.on("response",function(response) {
 		var buffer=""
 		response.on("data",function(data){buffer+=data})
 		response.on("end",function(){
-			var pkg=JSON.parse(buffer)
+			var pkg
+			try {
+				pkg=JSON.parse(buffer)
+			}
+			catch(e) {
+				//its a new package
+				console.log("NEW PACKAGE")
+				pkg={versions:{}}
+			}
 			if(pkg.versions[update.tag]) {
 				exec("npm unpublish "+JSON.stringify(name+"@"+update.tag),function(error){
 					if(error) throw error
@@ -92,7 +100,7 @@ function PublishVersion(name,update,todos) {
 			}
 		})
 	})
-	request.end()
+	request.end("")
 }
 
 function ManageRepo(push) {
@@ -101,12 +109,14 @@ function ManageRepo(push) {
 		console.log(sys.inspect(pkg))
 		GetTags(push,function(tags) {
 			console.log("TAG INFO RECIEVED")
+			console.log(sys.inspect(tags))
 			//set up a ref to tag mapping
 			var push_todos = todos[push.repository.name] =
 				todos[push.repository.name]
 				? todos[push.repository.name]
 				: []
 			Object.keys(tags).forEach(function(tag){
+				console.log(pkg.name+"@"+tag)
 				push_todos.push(
 					{
 						commit:tags[tag]
@@ -133,7 +143,6 @@ module.exports = function(req,res){
 		res.writeHead(200)
 		res.end()
 		console.log("RECIEVED PUSH")
-		console.log(push)
 		//only work on master
 		if(push.ref == "refs/heads/master") {
 			path.exists(push.repository.name,function(exists) {

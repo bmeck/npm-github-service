@@ -15,4 +15,4 @@ setTimeout(function(){
 		request.end( )
 		console.log("request sent")
 	} )
-},5000)
+},1000)
