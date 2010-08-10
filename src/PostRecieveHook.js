@@ -1,4 +1,7 @@
 var http = require("http")
+var fs = require( "fs" )
+var path = require( "path" )
+var sys = require( "sys" )
 var exec = function() {
 	console.log(Array.prototype.slice.call(arguments))
 	require("child_process").exec.apply(this,arguments)
@@ -27,22 +30,24 @@ var working_on = {/*repo:true|false*/}
 
 function GetTags(push,cb) {
 	//get a new socket client
-	var github_http=http.createClient(80,"github.com",true)
+	var github_http=http.createClient(80,"github.com")
 	var request = github_http.request(
 		"GET"
 		,"http://github.com/api/v2/json/repos/show/"+push.repository.owner.name+"/"+push.repository.name+"/tags"
 		,{host:"github.com"}
 	)
 	request.on("response",function(response){
+		console.log("REPSONSE GOTTEN")
 		var buffer=""
 		response.on("data",function(data){
 			buffer+=data
 		})
 		response.on("end",function(end){
-			cb(JSON.parse(tags).tags)
+			cb(JSON.parse(buffer).tags)
 		})
 	})
-	github_http.end()
+	request.write("")
+	request.end("")
 }
 
 function ProcessCommits(name,todos) {
@@ -51,6 +56,7 @@ function ProcessCommits(name,todos) {
 		return
 	}
 	update=todos.shift()
+	console.log(sys.inspect(update))
 	update.pkg.version=update.tag
 	PublishVersion(name,update,todos)
 }
@@ -58,8 +64,8 @@ function ProcessCommits(name,todos) {
 function Upload(name,update,todos) {
 	fs.writeFile(path.join(name,"package.json"),JSON.stringify(update.pkg),function(err) {
 		if(err) throw err
-		exec("git",["--git-dir",name,"checkout",update.commit],function(error){
-			exec("npm",["publish",name],function(error){
+		exec("git --git-dir="+name+"/.git --work-tree=./ checkout "+update.commit,function(error){
+			exec("np publish "+name,function(error){
 				if(error) throw error
 				ProcessCommits(name,todos)
 			})
@@ -76,7 +82,7 @@ function PublishVersion(name,update,todos) {
 		response.on("end",function(){
 			var pkg=JSON.parse(buffer)
 			if(pkg.versions[update.tag]) {
-				exec("npm",["unpublish",name+"@"+update.tag],function(error){
+				exec("npm unpublish "+JSON.stringify(name+"@"+update.tag),function(error){
 					if(error) throw error
 					Upload(name,update,todos)
 				})
@@ -90,14 +96,18 @@ function PublishVersion(name,update,todos) {
 }
 
 function ManageRepo(push) {
+	console.log( "REPO MANAGEMENT STARTED" )
 	GetPackageJSON(push,function(pkg) {
+		console.log(sys.inspect(pkg))
 		GetTags(push,function(tags) {
+			console.log("TAG INFO RECIEVED")
 			//set up a ref to tag mapping
-			var todos = todos[push.repository.name] =
-				todos[push.repository.name].concat(commit.commits)
-				|| commit.commits
+			var push_todos = todos[push.repository.name] =
+				todos[push.repository.name]
+				? todos[push.repository.name]
+				: []
 			Object.keys(tags).forEach(function(tag){
-				todos.push(
+				push_todos.push(
 					{
 						commit:tags[tag]
 						,tag:tag
@@ -108,7 +118,7 @@ function ManageRepo(push) {
 			//start the processing!
 			if(!working_on[push.repository.name]) {
 				working_on[push.repository.name] = true
-				ProcessCommits(push.repository.name,todos)
+				ProcessCommits(push.repository.name,push_todos)
 			}
 		})
 	})
@@ -126,18 +136,20 @@ module.exports = function(req,res){
 		console.log(push)
 		//only work on master
 		if(push.ref == "refs/heads/master") {
-			if(fs.isDirectory(push.repository.name)) {
-				exec("git",["--git-dir",push.repository.name,"pull","origin","master"],function(error){
-					if(error) throw error
-					ManageRepo(push)
-				})
-			}
-			else {
-				exec("git",["clone",push.push.url+".git"],function(error) {
-					if(error) throw error
-					ManageRepo(push)
-				})
-			}
+			path.exists(push.repository.name,function(exists) {
+				if(exists) {
+					exec("git --git-dir="+push.repository.name+"/.git --work-tree=./ pull origin master",function(error){
+						if(error) throw error
+						ManageRepo(push)
+					})
+				}
+				else {
+					exec("git clone "+push.repository.url+".git",function(error) {
+						if(error) throw error
+						ManageRepo(push)
+					})
+				}
+			})
 		}
 	})
 }
