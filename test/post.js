@@ -1,7 +1,7 @@
 var fs = require( "fs" )
 var http = require( "http" )
 
-var server = require("./../index")
+//var server = require("./../index")
 setTimeout(function(){
 	var client = http.createClient( 8888, "127.0.0.1" )
 	console.log("STARTING TEST")
@@ -9,7 +9,7 @@ setTimeout(function(){
 	request.on("response",function(){
 		console.log("response to client")
 	})
-	fs.readFile( "../push.json", function( err, data ) {
+	fs.readFile( "./push.json", function( err, data ) {
 		if(err) throw err
 		request.write( data )
 		request.end( )
