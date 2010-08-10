@@ -139,7 +139,16 @@ module.exports = function(req,res){
 	var buffer=""
 	req.on("data",function(data){buffer+=data})
 	req.on("end",function() {
-		var push=JSON.parse(buffer)
+		console.log(buffer)
+		var push
+		try{
+			push=JSON.parse(decodeURIComponent(buffer.slice(buffer.indexOf("=")+1)))
+		}
+		catch(e){
+			res.writeHead(500)
+			res.end()
+			return
+		}
 		res.writeHead(200)
 		res.end()
 		console.log("RECIEVED PUSH")
